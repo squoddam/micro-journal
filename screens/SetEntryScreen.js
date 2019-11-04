@@ -1,11 +1,12 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { View, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TextInput, StyleSheet } from 'react-native';
 import Button from '../components/Button';
 
 import { setEntry as setEntryAction } from '../store/entriesStore/actions';
+import { getDateDetails } from '../utils';
 
 const SetEntryScreen = ({ navigation }) => {
   const entryId = navigation.getParam('entryId');
@@ -26,11 +27,19 @@ const SetEntryScreen = ({ navigation }) => {
     navigation.navigate('EntriesScreen');
   });
 
+  const createdDate = useMemo(
+    () => (dateTitle ? getDateDetails(initialEntry.created) : null),
+    [dateTitle]
+  );
+  const updatedDate = useMemo(
+    () => (dateTitle ? getDateDetails(initialEntry.updated) : null),
+    [dateTitle]
+  );
+
   return (
     <View
       style={{
         flex: 1,
-        height: 40,
         backgroundColor: '#ede7f6',
         paddingHorizontal: 30
       }}
@@ -44,6 +53,16 @@ const SetEntryScreen = ({ navigation }) => {
           marginVertical: 15
         }}
       >
+        {createdDate && (
+          <Text
+            style={{ position: 'absolute', top: 10, left: 20, fontSize: 10 }}
+          >{`Created: ${createdDate.hours}:${createdDate.minutes}`}</Text>
+        )}
+        {updatedDate && (
+          <Text
+            style={{ position: 'absolute', top: 10, right: 20, fontSize: 10 }}
+          >{`Last updated: ${updatedDate.hours}:${updatedDate.minutes}`}</Text>
+        )}
         <TextInput
           multiline
           style={{ flex: 1, textAlignVertical: 'top', fontSize: 16 }}
