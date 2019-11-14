@@ -6,20 +6,20 @@ import { View, Text, SectionList, StyleSheet } from 'react-native';
 import Entry from '../components/Entry';
 import Button from '../components/Button';
 import { getEntries } from '../store/entriesStore/actions';
+import HeaderButton from '../components/HeaderButton';
 
 const EntriesScreen = ({ navigation }) => {
   const dispatch = useDispatch();
+  const entriesStore = useSelector(store => store.entriesStore);
 
   useEffect(() => {
-    dispatch(getEntries());
+    if (!entriesStore.loaded) dispatch(getEntries());
   }, []);
-
-  const entriesStore = useSelector(store => store.entriesStore);
 
   const sections = useMemo(() =>
     entriesStore.dates.map(title => ({
       title,
-      data: entriesStore.data[title] || []
+      data: entriesStore.days[title] || []
     }))
   );
 
@@ -59,6 +59,18 @@ const EntriesScreen = ({ navigation }) => {
     </View>
   );
 };
+
+
+const FilterHeaderButton = navigation => () => (
+  <HeaderButton
+    title="FILTER"
+    onPress={() => navigation.navigate('FilterScreen')}
+  />
+);
+
+EntriesScreen.navigationOptions = ({ navigation }) => ({
+  headerRight: FilterHeaderButton(navigation)
+});
 
 EntriesScreen.propTypes = {
   navigation: PropTypes.shape({

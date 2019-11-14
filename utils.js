@@ -1,4 +1,38 @@
-export const log = v => (console.log(v), v);
+export const log = (...v) => (console.log(...v), v.slice(-1)[0]);
+
+export const uniq = arr =>
+  arr.reduce((res, el, index) => {
+    const hasDouble = arr.includes(el, index + 1);
+
+    if (hasDouble) return res;
+
+    return [...res, el];
+  }, []);
+
+export const diff = (from, to) => {
+  const state = {
+    metaFrom: new Array(from.length).fill(-1),
+    metaTo: new Array(to.length).fill(-1)
+  };
+
+  from.forEach((id, i) => {
+    const toIndex = to.indexOf(id);
+
+    state.metaFrom[i] = toIndex;
+    if (toIndex >= 0) state.metaTo[toIndex] = i;
+  });
+
+  return {
+    toRemove: state.metaFrom.reduce(
+      (res, n, i) => (n === -1 ? [...res, i] : res),
+      []
+    ),
+    toAdd: state.metaTo.reduce(
+      (res, n, i) => (n === -1 ? [...res, i] : res),
+      []
+    )
+  };
+};
 
 export const withLeadingZero = num =>
   String(num).length > 1 ? num : `0${num}`;
