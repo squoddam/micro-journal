@@ -5,6 +5,7 @@ import { View, TextInput, FlatList, Modal, StyleSheet } from 'react-native';
 import Tag from './Tag';
 import Button from './Button';
 import TagsContainer from './TagsContainer';
+import useSuggestions from '../hooks/useSuggestions';
 
 const noop = () => {};
 const DELIMETERS = [' ', ',', '.'];
@@ -13,13 +14,14 @@ const TagInput = ({
   suggestionsOnly,
   tags: propsTags = [],
   text: propsText = '',
-  onChangeState = noop,
-  suggestions = []
+  onChangeState = noop
 }) => {
   const [state, setState] = useState({
     tags: propsTags,
     text: propsText
   });
+
+  const suggestions = useSuggestions(state.tags, state.text);
 
   const [showModal, setShowModal] = useState(false);
 
@@ -108,8 +110,7 @@ const TagInput = ({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    margin: 10
+    margin: 10,
   },
   modalBack: {
     flex: 1,

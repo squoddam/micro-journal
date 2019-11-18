@@ -8,7 +8,6 @@ import { setEntry as setEntryAction } from '../store/entriesStore/actions';
 import { getDateDetails } from '../utils';
 import TagInput from '../components/TagInput';
 import HeaderButton from '../components/HeaderButton';
-import useSuggestions from '../hooks/useSuggestions';
 
 const SetEntryScreen = ({ navigation }) => {
   const entryId = navigation.getParam('entryId');
@@ -27,8 +26,6 @@ const SetEntryScreen = ({ navigation }) => {
       ? { tags: initialEntry.tags, text: '' }
       : { tags: [], text: '' }
   );
-
-  const suggestions = useSuggestions(tagsState.tags, tagsState.text);
 
   useEffect(() => {
     navigation.setParams({
@@ -61,7 +58,6 @@ const SetEntryScreen = ({ navigation }) => {
         <TagInput
           onChangeState={tagsState => setTagsState(tagsState)}
           tags={tagsState.tags}
-          suggestions={suggestions}
         />
       </View>
       <View style={styles.contentContainer}>

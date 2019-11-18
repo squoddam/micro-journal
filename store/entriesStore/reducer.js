@@ -5,7 +5,7 @@ import {
   SYNC_REQUEST_SUCCESS,
   SET_ENTRY
 } from './actions';
-import { getDateDetails, compareDateDesc, uniq, diff, log } from '../../utils';
+import { getDateDetails, compareDateDesc, diff } from '../../utils';
 import produce from 'immer';
 import { createReducer } from '../createReducer';
 
@@ -40,8 +40,10 @@ const actionHandlers = {
 
       if (!draft.days[dateTitle]) draft.days[dateTitle] = [];
 
+      const id = String(time);
+
       draft.days[dateTitle].unshift({
-        id: String(time),
+        id,
         created: time,
         updated: null,
         dateTitle,
@@ -50,7 +52,7 @@ const actionHandlers = {
       });
 
       action.entry.tags.forEach(tag => {
-        draft.tags[tag] = [...(draft.tags[tag] || []), String(time)];
+        draft.tags[tag] = [...(draft.tags[tag] || []), id];
       });
     } else {
       const entryToEdit = draft.days[action.dateTitle].find(
