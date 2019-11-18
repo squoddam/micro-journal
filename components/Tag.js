@@ -3,26 +3,55 @@ import PropTypes from 'prop-types';
 
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 
-const Tag = ({ tag, onPress, block }) => {
+const Tag = ({ tag, onPress, isBlock, isAdd }) => {
   return (
     <TouchableOpacity
-      style={StyleSheet.flatten([styles.touchable, blockStyle(block)])}
+      style={StyleSheet.flatten([
+        styles.touchable,
+        blockStyle(isBlock),
+        isAddStyle(isAdd)
+      ])}
       onPress={() => onPress(tag)}
     >
-      <Text style={styles.text}>{tag}</Text>
+      <Text style={StyleSheet.flatten([styles.text, isAddStyle(isAdd, true)])}>
+        {isAdd ? 'Add +' : tag}
+      </Text>
     </TouchableOpacity>
   );
 };
 
 Tag.propTypes = {
-  tag: PropTypes.string.isRequired,
+  tag: PropTypes.string,
   onPress: PropTypes.func,
-  block: PropTypes.bool
+  isBlock: PropTypes.bool,
+  isAdd: PropTypes.bool
 };
 
-const blockStyle = isBlock => ({
-  flex: isBlock ? 1 : 0
-});
+const blockStyle = isBlock =>
+  isBlock
+    ? {
+        flex: 1,
+        height: 48
+      }
+    : { flex: 0 };
+
+const isAddStyle = (isAdd, isForText = false) => {
+  if (isAdd) {
+    if (isForText) {
+      return {
+        color: '#512da8'
+      };
+    }
+
+    return {
+      backgroundColor: 'white',
+      borderColor: '#512da8',
+      borderWidth: 2
+    };
+  }
+
+  return {};
+};
 
 const styles = StyleSheet.create({
   touchable: {
