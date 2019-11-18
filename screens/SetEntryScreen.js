@@ -1,11 +1,10 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 
 import { setEntry as setEntryAction } from '../store/entriesStore/actions';
-import { getDateDetails } from '../utils';
 import TagInput from '../components/TagInput';
 import HeaderButton from '../components/HeaderButton';
 
@@ -43,15 +42,6 @@ const SetEntryScreen = ({ navigation }) => {
     });
   }, [entry, tagsState.tags]);
 
-  const createdDate = useMemo(
-    () => (dateTitle ? getDateDetails(initialEntry.created) : null),
-    [dateTitle]
-  );
-  const updatedDate = useMemo(
-    () => (dateTitle ? getDateDetails(initialEntry.updated) : null),
-    [dateTitle]
-  );
-
   return (
     <View style={styles.container}>
       <View style={styles.tagInputContainer}>
@@ -61,16 +51,6 @@ const SetEntryScreen = ({ navigation }) => {
         />
       </View>
       <View style={styles.contentContainer}>
-        {createdDate && (
-          <Text
-            style={StyleSheet.flatten([styles.date, styles.dateLeft])}
-          >{`Created: ${createdDate.hours}:${createdDate.minutes}`}</Text>
-        )}
-        {updatedDate && (
-          <Text
-            style={StyleSheet.flatten([styles.date, styles.dateRight])}
-          >{`Last updated: ${updatedDate.hours}:${updatedDate.minutes}`}</Text>
-        )}
         <TextInput
           multiline
           style={styles.contentInput}
@@ -99,7 +79,6 @@ const styles = StyleSheet.create({
     position: 'relative'
   },
   tagInputContainer: {
-    flex: 1,
     position: 'relative',
     backgroundColor: 'white',
     borderRadius: 10,
@@ -114,9 +93,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     position: 'relative'
   },
-  date: { position: 'absolute', bottom: 10, fontSize: 10 },
-  dateLeft: { left: 10 },
-  dateRight: { right: 10 },
   contentInput: {
     flex: 1,
     textAlignVertical: 'top',

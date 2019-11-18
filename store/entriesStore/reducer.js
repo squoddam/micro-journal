@@ -86,7 +86,6 @@ const actionHandlers = {
 
       entryToEdit.tags = action.entry.tags;
     }
-    console.log('draft.tags: ', draft.tags);
   }),
   [SYNC_REQUEST_SUCCESS]: produce(draft => {
     draft.dates = Object.keys(draft.days).sort(compareDateDesc);
