@@ -9,20 +9,21 @@ const Entry = ({
   navigation: { navigate }
 }) => {
   return (
-    <TouchableOpacity
-      onPress={() =>
-        navigate('SetEntryScreen', {
-          entryId: id,
-          dateTitle
-        })
-      }
-    >
-      <View style={styles.container}>
+    <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.touchable}
+        onPress={() =>
+          navigate('SetEntryScreen', {
+            entryId: id,
+            dateTitle
+          })
+        }
+      >
         <View style={styles.content}>
           <Text>{content}</Text>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 };
 
@@ -39,16 +40,16 @@ Entry.propTypes = {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     flexDirection: 'row',
     paddingHorizontal: 10,
-    paddingVertical: 30,
-    marginVertical: 15,
-    width: '100%',
-    flex: 1,
-    elevation: 5,
+    paddingVertical: 15,
+    margin: 10,
     backgroundColor: 'white',
-    borderRadius: 10
+    borderRadius: 10,
+    elevation: 5
   },
+  touchable: { flex: 1 },
   content: {
     flex: 1,
     justifyContent: 'center',

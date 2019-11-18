@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   sectionList: {
     flex: 1,
     width: '100%',
-    paddingHorizontal: 30,
+    paddingHorizontal: 10,
     marginBottom: 30
   },
   section: {
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     elevation: 5,
     borderRadius: 10,
-    marginVertical: 30,
+    marginVertical: 15,
     width: 100,
     alignSelf: 'center'
   },
