@@ -5,26 +5,32 @@ import {
   SYNC_REQUEST_SUCCESS,
   SET_ENTRY
 } from './actions';
-import { getDateDetails, compareDateDesc } from '../../utils';
+import { getDateDetails, compareDateDesc, uniq, diff, log } from '../../utils';
 import produce from 'immer';
+import { createReducer } from '../createReducer';
 
 const initialState = {
   isLoading: false,
+  loaded: false,
   dates: [],
-  data: {}
+  days: {},
+  tags: {}
 };
 
 const actionHandlers = {
   [GET_ENTRIES_REQUEST]: produce((draft, action) => {
     draft.dates = action.dates;
     draft.isLoading = true;
+    draft.loaded = false;
   }),
   [GET_ENTRIES_REQUEST_FAIL]: produce(draft => {
     draft.isLoading = false;
   }),
   [GET_ENTRIES_REQUEST_SUCCESS]: produce((draft, action) => {
     draft.isLoading = false;
-    draft.data = action.entries;
+    draft.days = action.days || {};
+    draft.tags = action.tags || {};
+    draft.loaded = true;
   }),
   [SET_ENTRY]: produce((draft, action) => {
     const { year, month, day, time } = getDateDetails();
@@ -32,17 +38,22 @@ const actionHandlers = {
     if (!action.dateTitle) {
       const dateTitle = `${year}/${month}/${day}`;
 
-      if (!draft.data[dateTitle]) draft.data[dateTitle] = [];
+      if (!draft.days[dateTitle]) draft.days[dateTitle] = [];
 
-      draft.data[dateTitle].unshift({
+      draft.days[dateTitle].unshift({
         id: String(time),
         created: time,
         updated: null,
         dateTitle,
-        content: action.entry
+        content: action.entry.content,
+        tags: action.entry.tags
+      });
+
+      action.entry.tags.forEach(tag => {
+        draft.tags[tag] = [...(draft.tags[tag] || []), String(time)];
       });
     } else {
-      const entryToEdit = draft.data[action.dateTitle].find(
+      const entryToEdit = draft.days[action.dateTitle].find(
         day => day.id === action.id
       );
 
@@ -50,21 +61,36 @@ const actionHandlers = {
         throw new Error('ERROR! Unable to find entry to edit');
       }
 
-      entryToEdit.content = action.entry;
+      entryToEdit.content = action.entry.content;
       entryToEdit.updated = time;
+
+      const { toRemove, toAdd } = diff(
+        entryToEdit.tags || [],
+        action.entry.tags
+      );
+
+      toRemove.forEach(tagIndex => {
+        draft.tags[entryToEdit.tags[tagIndex]] = draft.tags[
+          entryToEdit.tags[tagIndex]
+        ].filter(id => id !== entryToEdit.id);
+      });
+
+      toAdd.forEach(tagIndex => {
+        draft.tags[action.entry.tags[tagIndex]] = [
+          ...(draft.tags[action.entry.tags[tagIndex]] || []),
+          entryToEdit.id
+        ];
+      });
+
+      entryToEdit.tags = action.entry.tags;
     }
+    console.log('draft.tags: ', draft.tags);
   }),
   [SYNC_REQUEST_SUCCESS]: produce(draft => {
-    draft.dates = Object.keys(draft.data).sort(compareDateDesc);
+    draft.dates = Object.keys(draft.days).sort(compareDateDesc);
   })
 };
 
-const reducer = (state = initialState, action) => {
-  const actionHandler = actionHandlers[action.type];
-
-  if (!actionHandler) return state;
-
-  return actionHandler(state, action);
-};
+const reducer = createReducer(actionHandlers, initialState);
 
 export default reducer;

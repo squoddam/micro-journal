@@ -1,12 +1,14 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { View, Text, TextInput, StyleSheet } from 'react-native';
-import Button from '../components/Button';
 
 import { setEntry as setEntryAction } from '../store/entriesStore/actions';
 import { getDateDetails } from '../utils';
+import TagInput from '../components/TagInput';
+import HeaderButton from '../components/HeaderButton';
+import useSuggestions from '../hooks/useSuggestions';
 
 const SetEntryScreen = ({ navigation }) => {
   const entryId = navigation.getParam('entryId');
@@ -16,16 +18,33 @@ const SetEntryScreen = ({ navigation }) => {
   const entriesStore = useSelector(store => store.entriesStore);
 
   const initialEntry =
-    entriesStore.data[dateTitle] &&
-    entriesStore.data[dateTitle].find(day => day.id === entryId);
+    entriesStore.days[dateTitle] &&
+    entriesStore.days[dateTitle].find(day => day.id === entryId);
 
   const [entry, setEntry] = useState(initialEntry ? initialEntry.content : '');
+  const [tagsState, setTagsState] = useState(
+    initialEntry
+      ? { tags: initialEntry.tags, text: '' }
+      : { tags: [], text: '' }
+  );
 
-  const handleAddEntry = useCallback(() => {
-    dispatch(setEntryAction(entry, dateTitle, entryId));
-    setEntry('');
-    navigation.navigate('EntriesScreen');
-  });
+  const suggestions = useSuggestions(tagsState.tags, tagsState.text);
+
+  useEffect(() => {
+    navigation.setParams({
+      handleAddEntry: () => {
+        dispatch(
+          setEntryAction(
+            { content: entry, tags: tagsState.tags },
+            dateTitle,
+            entryId
+          )
+        );
+        setEntry('');
+        navigation.navigate('EntriesScreen');
+      }
+    });
+  }, [entry, tagsState.tags]);
 
   const createdDate = useMemo(
     () => (dateTitle ? getDateDetails(initialEntry.created) : null),
@@ -37,50 +56,31 @@ const SetEntryScreen = ({ navigation }) => {
   );
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: '#ede7f6',
-        paddingHorizontal: 30
-      }}
-    >
-      <View
-        style={{
-          flex: 2,
-          backgroundColor: 'white',
-          padding: 30,
-          borderRadius: 10,
-          marginVertical: 15
-        }}
-      >
+    <View style={styles.container}>
+      <View style={styles.tagInputContainer}>
+        <TagInput
+          onChangeState={tagsState => setTagsState(tagsState)}
+          tags={tagsState.tags}
+          suggestions={suggestions}
+        />
+      </View>
+      <View style={styles.contentContainer}>
         {createdDate && (
           <Text
-            style={{ position: 'absolute', top: 10, left: 20, fontSize: 10 }}
+            style={StyleSheet.flatten([styles.date, styles.dateLeft])}
           >{`Created: ${createdDate.hours}:${createdDate.minutes}`}</Text>
         )}
         {updatedDate && (
           <Text
-            style={{ position: 'absolute', top: 10, right: 20, fontSize: 10 }}
+            style={StyleSheet.flatten([styles.date, styles.dateRight])}
           >{`Last updated: ${updatedDate.hours}:${updatedDate.minutes}`}</Text>
         )}
         <TextInput
           multiline
-          style={{ flex: 1, textAlignVertical: 'top', fontSize: 16 }}
+          style={styles.contentInput}
           onChangeText={text => setEntry(text)}
           placeholder="Enter your log here..."
           value={entry}
-        />
-      </View>
-      <View style={styles.btnsContainer}>
-        <Button
-          containerStyle={styles.btn}
-          title="CANCEL"
-          onPress={() => navigation.navigate('EntriesScreen')}
-        />
-        <Button
-          containerStyle={styles.btn}
-          title="SAVE"
-          onPress={handleAddEntry}
         />
       </View>
     </View>
@@ -90,20 +90,58 @@ const SetEntryScreen = ({ navigation }) => {
 SetEntryScreen.propTypes = {
   navigation: PropTypes.shape({
     navigate: PropTypes.func.isRequired,
-    getParam: PropTypes.func.isRequired
+    getParam: PropTypes.func.isRequired,
+    setParams: PropTypes.func.isRequired
   }).isRequired
 };
 
 const styles = StyleSheet.create({
-  btn: {
+  container: {
     flex: 1,
-    marginHorizontal: 10
+    backgroundColor: '#ede7f6',
+    padding: 10,
+    position: 'relative'
   },
-  btnsContainer: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-around'
+  tagInputContainer: {
+    flex: 1,
+    position: 'relative',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    width: '100%'
+  },
+  contentContainer: {
+    flex: 2,
+    backgroundColor: 'white',
+    padding: 10,
+    paddingBottom: 30,
+    borderRadius: 10,
+    marginTop: 10,
+    position: 'relative'
+  },
+  date: { position: 'absolute', bottom: 10, fontSize: 10 },
+  dateLeft: { left: 10 },
+  dateRight: { right: 10 },
+  contentInput: {
+    flex: 1,
+    textAlignVertical: 'top',
+    fontSize: 16
   }
+});
+
+const CancelHeaderButton = navigation => () => (
+  <HeaderButton
+    title="CANCEL"
+    onPress={() => navigation.navigate('EntriesScreen')}
+  />
+);
+
+const SaveHeaderButton = navigation => () => (
+  <HeaderButton title="SAVE" onPress={navigation.getParam('handleAddEntry')} />
+);
+
+SetEntryScreen.navigationOptions = ({ navigation }) => ({
+  headerLeft: CancelHeaderButton(navigation),
+  headerRight: SaveHeaderButton(navigation)
 });
 
 export default SetEntryScreen;
